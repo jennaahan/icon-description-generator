@@ -7,6 +7,13 @@ import { CompletionRequestBody } from "@/lib/types";
 import { useState } from "react";
 import { z } from "zod";
 
+
+import { Disclosure, Tip, Title, Checkbox, Button } from "react-figma-plugin-ds";
+import "react-figma-plugin-ds/figma-plugin-ds.css";
+
+
+
+
 // This function calls our API and lets you read each character as it comes in.
 // To change the prompt of our AI, go to `app/api/completion.ts`.
 async function streamAIResponse(body: z.infer<typeof CompletionRequestBody>) {

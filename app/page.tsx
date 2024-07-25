@@ -4,15 +4,19 @@ import { figmaAPI } from "@/lib/figmaAPI";
 import { getTextForSelection } from "@/lib/getTextForSelection";
 import { getTextOffset } from "@/lib/getTextOffset";
 import { CompletionRequestBody } from "@/lib/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
+import { getSelection } from "@/lib/getSelection";
+import { IconType } from "@/lib/customTypes";
+import Image from "next/image";
+import SvgImage from "./components/SVGImage";
 
-
-import { Disclosure, Tip, Title, Checkbox, Button } from "react-figma-plugin-ds";
+import { Disclosure, Tip, Title, Checkbox, Button, Icon } from "react-figma-plugin-ds";
 import "react-figma-plugin-ds/figma-plugin-ds.css";
 
 
-
+import Tab from "./components/Tab"
+import FRE from "./components/FRE";
 
 // This function calls our API and lets you read each character as it comes in.
 // To change the prompt of our AI, go to `app/api/completion.ts`.
@@ -52,6 +56,13 @@ export default function Plugin() {
       });
       return;
     }
+    
+    
+    //test code
+    const selection = await getSelection();
+    console.log("LOGGING SELECTION")
+    console.log(selection)
+
 
     const reader = await streamAIResponse({
       layers,
@@ -86,6 +97,7 @@ export default function Plugin() {
     const reader = await streamAIResponse({
       layers,
     });
+    
 
     let text = "";
     let nodeID: string | null = null;
@@ -143,13 +155,56 @@ export default function Plugin() {
     }
   };
 
+
+  const [icons, setIcons] = useState<Array<IconType>>([]);
+  const [loading, setIsLoading] = useState(false);
+
+  useEffect(()=>{
+    async function getIcons() {
+      try {
+        let iconsList = await getSelection();
+        setIcons(iconsList);
+      } catch (error) {
+        console.error("Failed to get icons:", error);
+      }
+    }
+    getIcons();
+  }, [])
+
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-900 text-white">
-      <h1 className="text-4xl font-bold mb-5 mt-2">Poem Generator</h1>
-      <div className="text-sm mb-5 text-gray-300">
-        Select a node to create a poem about the text inside of it.
+    <div className="flex flex-col items-center min-h-screen">
+      {false && <FRE />}
+      <div
+        style={{
+          display: "flex",
+          padding: "0 16px",
+          marginTop: 12,
+          alignItems: "center",
+        }}
+      >
+        <Tab
+          onClick={() => {}}
+          active={true} //fix this
+          label="Generate"
+        ></Tab>
       </div>
-      <div className="flex flex-row gap-2">
+      <Checkbox
+        className=""
+        label={`Selected (${icons.length})`}
+        onChange={function _(){}}
+        type="checkbox"
+      />
+      <ul>
+        {icons.map((icon, idx) => (
+          <li key={idx} className="flex flex-row">
+            <div className="flex flex-row gap-1">
+              <SvgImage svgString={icon.image} alt={icon.name} />
+              <p>{icon.name}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {/* <div className="flex flex-row gap-2">
         <button
           onClick={onStreamToIFrame}
           className="mb-5 p-2 px-4 rounded bg-indigo-600 text-white hover:bg-indigo-700"
@@ -170,6 +225,22 @@ export default function Plugin() {
           </pre>
         </div>
       )}
+      <div>
+      </div> */}
+
+      
+      {/* <Icon
+        className="icon--spin icon--spinner"
+        color="black8"
+        name="spinner"
+      />    */}
+      <Button
+      >
+        Generate
+      </Button>
+      <Button isSecondary={true}>
+        Cancel
+      </Button>
     </div>
   );
 }

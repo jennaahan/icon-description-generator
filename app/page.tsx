@@ -1,8 +1,6 @@
 "use client";
 
 import { figmaAPI } from "@/lib/figmaAPI";
-import { getTextForSelection } from "@/lib/getTextForSelection";
-import { getTextOffset } from "@/lib/getTextOffset";
 import { CompletionRequestBody } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -11,236 +9,181 @@ import { IconType } from "@/lib/customTypes";
 import Image from "next/image";
 import SvgImage from "./components/SVGImage";
 
-import { Disclosure, Tip, Title, Checkbox, Button, Icon } from "react-figma-plugin-ds";
+/**
+       * now wedit the prompt to generate response in correct format
+       * also ignore icon image when prompt feeding
+       * edit api to handle just one vs multiple icons (generate descriptiosn vs regenerate description)
+       * use this info to update the icons state
+       * code snippet highlighter
+       * [
+       *  { test: "description"
+       *  
+       *  }
+       * ]
+       * 
+       * brackets should be black 3
+       * key, whiche comes below should be pink
+       * value, which comes after color should be blue
+       */
+
+import { Disclosure, Tip, Title, Checkbox, Button, Icon, SelectOption, Select } from "react-figma-plugin-ds";
 import "react-figma-plugin-ds/figma-plugin-ds.css";
+import iconSelection from './assets/icon-selection.svg'
 
-
-import Tab from "./components/Tab"
 import FRE from "./components/FRE";
-
-// This function calls our API and lets you read each character as it comes in.
-// To change the prompt of our AI, go to `app/api/completion.ts`.
-async function streamAIResponse(body: z.infer<typeof CompletionRequestBody>) {
-  const resp = await fetch("/api/completion", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  const reader = resp.body?.pipeThrough(new TextDecoderStream()).getReader();
-
-  if (!reader) {
-    throw new Error("Error reading response");
-  }
-
-  return reader;
-}
+import { Text } from "react-figma-plugin-ds";
 
 export default function Plugin() {
-  const [completion, setCompletion] = useState("");
-
-  // This function calls our API and handles the streaming response.
-  // This ends up building the text up and using React state to update the UI.
-  const onStreamToIFrame = async () => {
-    setCompletion("");
-    const layers = await getTextForSelection();
-
-    if (!layers.length) {
-      figmaAPI.run(async (figma) => {
-        figma.notify(
-          "Please select a layer with text in it to generate a poem.",
-          { error: true },
-        );
-      });
-      return;
-    }
-    
-    
-    //test code
-    const selection = await getSelection();
-    console.log("LOGGING SELECTION")
-    console.log(selection)
-
-
-    const reader = await streamAIResponse({
-      layers,
-    });
-
-    let text = "";
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        break;
-      }
-      text += value;
-      setCompletion(text);
-    }
-  };
-
-  // This is the same as above, but instead of updating React state, it adds the
-  // text to the Figma canvas.
-  const onStreamToCanvas = async () => {
-    const layers = await getTextForSelection();
-
-    if (!layers.length) {
-      figmaAPI.run(async (figma) => {
-        figma.notify(
-          "Please select a layer with text in it to generate a poem.",
-          { error: true },
-        );
-      });
-      return;
-    }
-
-    const reader = await streamAIResponse({
-      layers,
-    });
-    
-
-    let text = "";
-    let nodeID: string | null = null;
-    const textPosition = await getTextOffset();
-
-    const createOrUpdateTextNode = async () => {
-      // figmaAPI.run is a helper that lets us run code in the figma plugin sandbox directly
-      // from the iframe without having to post messages back and forth. For more info,
-      // see /lib/figmaAPI.ts
-      //
-      // It is important to note that any variables that this function closes over must be
-      // specified in the second argument to figmaAPI.run. This is because the code is actually
-      // run in the figma plugin sandbox, not in the iframe.
-      nodeID = await figmaAPI.run(
-        async (figma, { nodeID, text, textPosition }) => {
-          let node = figma.getNodeById(nodeID ?? "");
-
-          // If the node doesn't exist, create it and position it to the right of the selection.
-          if (!node) {
-            node = figma.createText();
-            node.x = textPosition?.x ?? 0;
-            node.y = textPosition?.y ?? 0;
-          }
-
-          if (node.type !== "TEXT") {
-            return "";
-          }
-
-          const oldHeight = node.height;
-
-          await figma.loadFontAsync({ family: "Inter", style: "Medium" });
-          node.fontName = { family: "Inter", style: "Medium" };
-
-          node.characters = text;
-
-          // Scroll and zoom to the node if it's height changed (ex we've added a new line).
-          // We only do this when the height changes to reduce flickering.
-          if (oldHeight !== node.height) {
-            figma.viewport.scrollAndZoomIntoView([node]);
-          }
-
-          return node.id;
-        },
-        { nodeID, text, textPosition },
-      );
-    };
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        break;
-      }
-      text += value;
-      await createOrUpdateTextNode();
-    }
-  };
-
-
   const [icons, setIcons] = useState<Array<IconType>>([]);
-  const [loading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [AIResponse, setAIResponse] = useState("")
+  const [selectedIcons, setSelectedIcons] = useState<Array<String>>([]);
 
   useEffect(()=>{
     async function getIcons() {
+      let iconList = []
       try {
-        let iconsList = await getSelection();
-        setIcons(iconsList);
+        iconList = await getSelection();
+        setIcons(iconList);
+        setSelectedIcons(iconList.map(icon => icon.name))
       } catch (error) {
         console.error("Failed to get icons:", error);
+      }
+
+      //todo make this not glitchy
+      if (iconList.length == 0) {
+        figmaAPI.run(async (figma) => {
+          figma.notify(
+            "Please select a layer with icons to generate descriptions.",
+          );
+          // figma.closePlugin()
+        });
+        return;
       }
     }
     getIcons();
   }, [])
 
+  async function closePlugin(){
+    figmaAPI.run(async (figma) => {
+      figma.closePlugin()
+    });
+  }
+  
+
+  async function fetchResponse(){
+    setLoading(true)
+
+    try {
+      const response = await fetch('/api/fetchResponse', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(icons),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const { data } = await response.json();
+      console.log(data)
+      console.log(data.message.content)
+      setAIResponse(data.message.content)
+
+    } catch (error) {
+      console.error('Error:', (error as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const tabs = ["Generate", "Edit", "Export"]
+  const [selectedTab, setSelectedTab] = useState("Generate")
+
+  function toggleIcon(icon: string) {
+    var index = selectedIcons.indexOf(icon);
+    var selectedIconsCopy = [...selectedIcons]
+    if (index > -1) {
+      selectedIconsCopy.splice(index, 1);
+    }
+    else {
+      selectedIconsCopy.push(icon)
+    }
+    setSelectedIcons(selectedIconsCopy)
+  }
+  
   return (
-    <div className="flex flex-col items-center min-h-screen">
+    <div className="flex flex-col">
       {false && <FRE />}
-      <div
-        style={{
-          display: "flex",
-          padding: "0 16px",
-          marginTop: 12,
-          alignItems: "center",
-        }}
-      >
-        <Tab
-          onClick={() => {}}
-          active={true} //fix this
-          label="Generate"
-        ></Tab>
-      </div>
-      <Checkbox
-        className=""
-        label={`Selected (${icons.length})`}
-        onChange={function _(){}}
-        type="checkbox"
-      />
-      <ul>
-        {icons.map((icon, idx) => (
-          <li key={idx} className="flex flex-row">
-            <div className="flex flex-row gap-1">
-              <SvgImage svgString={icon.image} alt={icon.name} />
-              <p>{icon.name}</p>
-            </div>
+      <ul className="flex flex-row gap-4 px-4 py-3 border border-b-gray-300">
+         {tabs.map((tab, index) => (
+          <li onClick={() => setSelectedTab(tab)} key={index}>
+            <Text weight={selectedTab == tab ? "bold" : undefined}>{tab}</Text>
           </li>
         ))}
       </ul>
-      {/* <div className="flex flex-row gap-2">
-        <button
-          onClick={onStreamToIFrame}
-          className="mb-5 p-2 px-4 rounded bg-indigo-600 text-white hover:bg-indigo-700"
-        >
-          Generate Poem in iframe
-        </button>
-        <button
-          onClick={onStreamToCanvas}
-          className="mb-5 p-2 px-4 rounded bg-green-600 text-white hover:bg-green-700"
-        >
-          Generate Poem on Canvas
-        </button>
-      </div>
-      {completion && (
-        <div className="border border-gray-600 rounded p-5 bg-gray-800 shadow-lg m-2 text-gray-200">
-          <pre className="whitespace-pre-wrap">
-            <p className="text-md">{completion}</p>
-          </pre>
+      {icons.length === 0 && 
+        <div className="w-full flex flex-col text-center justify-center">
+          <Title
+            className="max-w-xs"
+            level="h1"
+            size="small"
+            weight="bold"
+            >
+              Please select a layer with at least one icon to generate descriptions
+          </Title>
+          <Image
+            src={iconSelection}
+            alt="Icon selection"
+            width={248}
+            height={152}
+          />
         </div>
-      )}
-      <div>
-      </div> */}
-
-      
-      {/* <Icon
-        className="icon--spin icon--spinner"
-        color="black8"
-        name="spinner"
-      />    */}
-      <Button
-      >
-        Generate
-      </Button>
-      <Button isSecondary={true}>
-        Cancel
-      </Button>
+      }
+      <div className="mt-4">
+        <Text className="mx-4 mb-4">{`Selected ${selectedIcons.length} of ${icons.length} icons`}</Text>
+        <ul className="flex flex-col gap-3">
+          {icons.map((icon, idx) => (
+            <li key={idx} className="flex flex-row gap-4 items-center ml-1.5">
+              <Checkbox
+                defaultValue={selectedIcons.indexOf(icon.name) > -1}
+                onChange={() => toggleIcon(icon.name)}
+                type="checkbox"
+              />
+              <div className="flex flex-row gap-2 items-center">
+                <div className="p-2 bg-gray-100 rounded-sm">
+                  <SvgImage src={icon.image} alt={icon.name} width={16} height={16} />
+                </div>
+                <Text>{icon.name}</Text>
+              </div>
+            </li>
+          ))}
+        </ul>
+        {loading && <Icon
+          className="icon--spin icon--spinner"
+          color="black8"
+          name="spinner"
+        />  } 
+        <div className="w-full p-4 fixed bottom-0 flex flex-row items-center justify-between">
+          <Text size="small">Generate icon descriptions</Text>
+          <p>{AIResponse}</p>
+          <div className="flex flex-row items-center gap-2">
+            <Button 
+              isSecondary={true}
+              onClick={closePlugin}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={fetchResponse}
+            >
+              Generate
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

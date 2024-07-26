@@ -1,5 +1,6 @@
 export interface IconType {
     name: string,
     image: string,
-    description?: string
+    description?: string,
+    aiDescription?: string
 }

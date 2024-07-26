@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* overrided figma react ds components to remove checkbox label */
+.checkbox__label {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.checkbox__label::before {
+    margin: 0 !important;
+    width: 12px !important;
+    height: 12px !important;
+}

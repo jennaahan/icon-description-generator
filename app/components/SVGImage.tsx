@@ -1,15 +1,18 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface SvgImageProps {
-  svgString: string;
-  alt?: string;
+  src: string;
+  alt: string;
+  width: number,
+  height: number
 }
 
-const SvgImage: React.FC<SvgImageProps> = ({ svgString, alt }) => {
-  const encodedSvg = encodeURIComponent(svgString);
+const SvgImage: React.FC<SvgImageProps> = ({ src, alt, width, height }) => {
+  const encodedSvg = encodeURIComponent(src);
   const imgSrc = `data:image/svg+xml;charset=UTF-8,${encodedSvg}`;
 
-  return <img src={imgSrc} alt={alt} />;
+  return <Image src={imgSrc} alt={alt} width={width} height={height}></Image>
 };
 
 export default SvgImage;

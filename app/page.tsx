@@ -1,13 +1,12 @@
 "use client";
 
 import { figmaAPI } from "@/lib/figmaAPI";
-import { CompletionRequestBody } from "@/lib/types";
 import { useEffect, useState } from "react";
-import { z } from "zod";
 import { getSelection } from "@/lib/getSelection";
 import { IconType } from "@/lib/customTypes";
 import Image from "next/image";
-import SvgImage from "./components/SVGImage";
+import Edit from "./components/Edit";
+import BottomBar from "./components/BottomBar";
 
 /**
        * now wedit the prompt to generate response in correct format
@@ -26,12 +25,13 @@ import SvgImage from "./components/SVGImage";
        * value, which comes after color should be blue
        */
 
-import { Disclosure, Tip, Title, Checkbox, Button, Icon, SelectOption, Select } from "react-figma-plugin-ds";
+import { Title, Icon, Text} from "react-figma-plugin-ds";
 import "react-figma-plugin-ds/figma-plugin-ds.css";
 import iconSelection from './assets/icon-selection.svg'
 
 import FRE from "./components/FRE";
-import { Text } from "react-figma-plugin-ds";
+import Generate from "./components/Generate";
+import Export from "./components/Export";
 
 export default function Plugin() {
   const [icons, setIcons] = useState<Array<IconType>>([]);
@@ -40,6 +40,7 @@ export default function Plugin() {
   const [selectedIcons, setSelectedIcons] = useState<Array<String>>([]);
 
   useEffect(()=>{
+    //get all icons in selected frame
     async function getIcons() {
       let iconList = []
       try {
@@ -64,15 +65,17 @@ export default function Plugin() {
     getIcons();
   }, [])
 
-  async function closePlugin(){
-    figmaAPI.run(async (figma) => {
-      figma.closePlugin()
-    });
+  //generates JSON string of icons such that only selected icons are included with fields name and description
+  function generateIconsJSON(){
+    const filteredIcons = icons
+    .filter(icon => selectedIcons.includes(icon.name))
+    .map(({ name, description }) => ({ name, ...(description && { description }) }));
+    return JSON.stringify(filteredIcons)
   }
-  
 
-  async function fetchResponse(){
+  async function fetchAIResponse(){
     setLoading(true)
+    let iconsJSON = generateIconsJSON();
 
     try {
       const response = await fetch('/api/fetchResponse', {
@@ -80,44 +83,61 @@ export default function Plugin() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(icons),
+        body: iconsJSON,
       });
   
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+      
+      // retrieve and save AI response
+      console.log("Successfully fetched response")
       const { data } = await response.json();
-      console.log(data)
-      console.log(data.message.content)
       setAIResponse(data.message.content)
 
     } catch (error) {
       console.error('Error:', (error as Error).message);
     } finally {
       setLoading(false);
+      setSelectedTab("Export")
     }
   }
+
+  useEffect(()=>{
+    mergeArrays()
+  }, [AIResponse])
+
+  function mergeArrays() {
+    function getAIDescription(iconName : String) {
+      let AIObj = JSON.parse(AIResponse)
+      let icon = AIObj.find((icon : IconType) => icon.name === iconName);
+      return icon ? icon.AIDescription : '';
+    }
+
+    let mergedArray = icons.map(icon => ({
+      ...icon,
+      AIDescription: getAIDescription(icon.name)
+    }));
+    setIcons(mergedArray)
+  }
+
+  const handleDownload = () => {
+    const blob = new Blob([AIResponse], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'icon-metadata.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const tabs = ["Generate", "Edit", "Export"]
   const [selectedTab, setSelectedTab] = useState("Generate")
-
-  function toggleIcon(icon: string) {
-    var index = selectedIcons.indexOf(icon);
-    var selectedIconsCopy = [...selectedIcons]
-    if (index > -1) {
-      selectedIconsCopy.splice(index, 1);
-    }
-    else {
-      selectedIconsCopy.push(icon)
-    }
-    setSelectedIcons(selectedIconsCopy)
-  }
   
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-screen">
       {false && <FRE />}
-      <ul className="flex flex-row gap-4 px-4 py-3 border border-b-gray-300">
+      <ul className="sticky top-0 z-10 bg-white flex flex-row gap-4 px-4 py-3 border border-b-gray-300">
          {tabs.map((tab, index) => (
           <li onClick={() => setSelectedTab(tab)} key={index}>
             <Text weight={selectedTab == tab ? "bold" : undefined}>{tab}</Text>
@@ -142,48 +162,54 @@ export default function Plugin() {
           />
         </div>
       }
-      <div className="mt-4">
-        <Text className="mx-4 mb-4">{`Selected ${selectedIcons.length} of ${icons.length} icons`}</Text>
-        <ul className="flex flex-col gap-3">
-          {icons.map((icon, idx) => (
-            <li key={idx} className="flex flex-row gap-4 items-center ml-1.5">
-              <Checkbox
-                defaultValue={selectedIcons.indexOf(icon.name) > -1}
-                onChange={() => toggleIcon(icon.name)}
-                type="checkbox"
-              />
-              <div className="flex flex-row gap-2 items-center">
-                <div className="p-2 bg-gray-100 rounded-sm">
-                  <SvgImage src={icon.image} alt={icon.name} width={16} height={16} />
-                </div>
-                <Text>{icon.name}</Text>
-              </div>
-            </li>
-          ))}
-        </ul>
-        {loading && <Icon
-          className="icon--spin icon--spinner"
-          color="black8"
-          name="spinner"
-        />  } 
-        <div className="w-full p-4 fixed bottom-0 flex flex-row items-center justify-between">
-          <Text size="small">Generate icon descriptions</Text>
-          <p>{AIResponse}</p>
-          <div className="flex flex-row items-center gap-2">
-            <Button 
-              isSecondary={true}
-              onClick={closePlugin}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={fetchResponse}
-            >
-              Generate
-            </Button>
-          </div>
+      {loading && 
+        <div style={{ minHeight: 'calc(100vh - 160px)' }} className="flex justify-center items-center overflow-hidden">
+          <Icon
+              className="icon--spin icon--spinner"
+              color="black8"
+              name="spinner"
+          />  
         </div>
-      </div>
+      } 
+      {!loading && selectedTab === "Generate" && 
+        <div>
+          <Generate
+            icons={icons}
+            selectedIcons={selectedIcons}
+            setSelectedIcons={setSelectedIcons}
+          />
+          <BottomBar
+            description="Generate descriptions"
+            buttonText="Generate"
+            onClick={fetchAIResponse}
+          />
+        </div>
+      }
+      { selectedTab === "Edit" &&
+        <div>
+          <Edit
+            icons={icons}
+            selectedIcons={selectedIcons}
+          />
+          <BottomBar
+            description="Apply descriptions"
+            buttonText="Apply"
+            onClick={fetchAIResponse}
+          />
+        </div>
+      }
+      { selectedTab === "Export" && 
+      <div>
+        <Export
+          AIResponse={AIResponse}
+        />
+        <BottomBar
+          description="Download JSON"
+          buttonText="Download"
+          onClick={handleDownload}
+        />
+        </div>
+      }
     </div>
   );
 }

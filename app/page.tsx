@@ -7,7 +7,7 @@ import { IconType } from "@/lib/customTypes";
 import Image from "next/image";
 import Edit from "./components/Edit";
 import BottomBar from "./components/BottomBar";
-
+import { updateDescription } from "@/lib/updateDescription";
 /**
        * now wedit the prompt to generate response in correct format
        * also ignore icon image when prompt feeding
@@ -23,6 +23,9 @@ import BottomBar from "./components/BottomBar";
        * brackets should be black 3
        * key, whiche comes below should be pink
        * value, which comes after color should be blue
+       * 
+       * 
+       * TODO maybe update icon type to include component key for easier update
        */
 
 import { Title, Icon, Text} from "react-figma-plugin-ds";
@@ -108,6 +111,8 @@ export default function Plugin() {
   }, [AIResponse])
 
   function mergeArrays() {
+    //TODO make this into a more general function to just get the icon object by name
+    console.log
     function getAIDescription(iconName : String) {
       let AIObj = JSON.parse(AIResponse)
       let icon = AIObj.find((icon : IconType) => icon.name === iconName);
@@ -133,6 +138,10 @@ export default function Plugin() {
 
   const tabs = ["Generate", "Edit", "Export"]
   const [selectedTab, setSelectedTab] = useState("Generate")
+
+  function handleUpdate(){
+    updateDescription(icons);
+  }
   
   return (
     <div className="flex flex-col h-screen">
@@ -190,11 +199,12 @@ export default function Plugin() {
           <Edit
             icons={icons}
             selectedIcons={selectedIcons}
+            setIcons={setIcons}
           />
           <BottomBar
-            description="Apply descriptions"
-            buttonText="Apply"
-            onClick={fetchAIResponse}
+            description="Update descriptions"
+            buttonText="Update"
+            onClick={handleUpdate}
           />
         </div>
       }

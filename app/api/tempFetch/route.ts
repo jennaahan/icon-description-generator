@@ -4,6 +4,7 @@ import { OpenAI } from 'openai';
 
 export async function POST(req: NextRequest) {
   try {
+    console.log("calling temp fetch")
     const iconsJSON = await req.json();
 
     console.log("Fetching AI response for the following icons:")
@@ -14,9 +15,9 @@ export async function POST(req: NextRequest) {
     });
 
     const prompt = 
-    `Imagine you are a UX designer updating a Figma icon library. Your task is to add descriptions to icons provided in Icons JSON to improve their searchability and ensure they are used correctly. Given the following JSON array of icons, add an AI-generated description for each icon in the specified format. 
+    `Imagine you are a UX designer updating a Figma icon library. Your task is to generate descriptions to the icon provided in Icons JSON to improve its searchability and ensure they are used correctly. Given the following icon, add an AI-generated description for the icon in the specified format. 
     
-    Return only the JSON array without any additional text. When the output message is parsed, it shouldn't cause any SyntaxErrors:
+    Return only the AI description without any additional text. The output description will immediately be assigned to icon without additional formatting
 
     Icons JSON:
     ${JSON.stringify(iconsJSON)}
@@ -26,25 +27,11 @@ export async function POST(req: NextRequest) {
     Metaphor: [related metaphors];
     [usage description]
 
-    Expected JSON format:
-    [
-      {
-        "name": "icon1",
-        "AIDescription": "Keyword: description1;\nMetaphor: [metaphors];\n\n[usage description]"
-      },
-      {
-        "name": "icon2",
-        "AIDescription": "Keyword: description2;\nMetaphor: [metaphors];\n\n[usage description]"
-      }
-    ]
-
-    Considerations for output JSON:
-    - Do not alter the name of the icon
-    - Running JSON.parse() on the given JSON should not cause a SyntaxError
-    - Output should match the expected JSON format
+    Expected description format:
+    "Keyword: description1;\nMetaphor: [metaphors];\n\n[usage description]"
     
     Considerations for AIDescription:
-    - Keyword should be followed by one line break, metaphor should be followed by one line break, and usage description should be followed by two line breaks
+    - Keyword must be followed by one line break, metaphor must be followed by one line break, and usage description must be followed by two line breaks
     - AIDescription should match format for AIDescription and look similar to given examples
     - Keyword should be the exact description provided for the icon in the Icons JSON
     - Metaphor should include comma separated metaphors for the given icon
@@ -53,7 +40,7 @@ export async function POST(req: NextRequest) {
     - When generating metaphors, consider what metadata other icon libraries may assign to the given icon
     - Usage description should start with either "Used to" or "Used for:
     - Usage description should be concise (3-8 words)
-    - Usage description should be very strictly based on the provided icon name and description. Avoid making assumptions or adding unnecessary details
+    - Usage description should be strictly based on the provided icon name and description. Avoid making assumptions or adding unnecessary details
     
      ---
 
@@ -75,11 +62,8 @@ export async function POST(req: NextRequest) {
     Used to represent collections of files.
 
     ---
-
-    Again, MAKE 100% SURE that parsing the output message with JSON.parse does not cause any errors, including syntax errors
     
     `;
-
 
     const completion = await openai.chat.completions.create({
       messages: [{ role: "system", content: prompt }],

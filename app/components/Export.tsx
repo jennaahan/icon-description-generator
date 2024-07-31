@@ -1,19 +1,17 @@
 import React from 'react'
 import { Icon, Text } from 'react-figma-plugin-ds'
-import {CopyToClipboard} from 'react-copy-to-clipboard';
-import { figmaAPI } from '@/lib/figmaAPI';
+import {CopyToClipboard} from 'react-copy-to-clipboard'
+import { figmaAPI } from '@/lib/figmaAPI'
 
 interface ExportProps {
     AIResponse: string
-  }
-  
+}
 
 function Export({AIResponse} : ExportProps) {
-
   async function copyConfirmation(){
     figmaAPI.run(async (figma) => {
       figma.notify("Copied to clipboard")
-      });
+    })
   }
 
   return (
@@ -24,7 +22,7 @@ function Export({AIResponse} : ExportProps) {
           <Icon name="draft" color="black3" />
         </CopyToClipboard>
       </div >
-        <pre className='p-4 overflow-x-scroll'>{AIResponse}</pre>
+      <pre className='p-4 overflow-x-scroll'>{AIResponse}</pre>
     </div>
   )
 }

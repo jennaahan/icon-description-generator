@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* overrided figma react ds components to remove checkbox label */
+/* overrided styling for figma ds checkbox to remove checkbox label */
 .checkbox__label {
     margin: 0 !important;
     padding: 0 !important;
@@ -14,6 +14,7 @@
     height: 12px !important;
 }
 
+/* set code snippet font size */
 pre {
     font-size: 11px;
 }

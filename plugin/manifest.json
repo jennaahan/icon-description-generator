@@ -8,5 +8,6 @@
   "networkAccess": {
     "allowedDomains": ["*"],
     "reasoning": "Internet access for local development."
-  }
+  },
+  "documentAccess": "dynamic-page"
 }

@@ -6,7 +6,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Icon Description Generator",
-  description: "AI-powered plugin to generate icon descriptions in Fluent 2 style",
+  description:
+    "AI-powered plugin to generate icon descriptions in Fluent 2 style",
 };
 
 export default function RootLayout({

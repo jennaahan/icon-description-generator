@@ -1,18 +1,17 @@
-import { figmaAPI } from "@/lib/figmaAPI"
+import { figmaAPI } from "@/lib/figmaAPI";
 
-export async function showToast(message: string){
+export async function showToast(message: string) {
   await figmaAPI.run(
     (figma, { message }) => {
-      return figma.notify(message)
+      return figma.notify(message);
     },
     // pass variable as parameter
-    { message }
-  )
+    { message },
+  );
 }
 
-export async function closePlugin(){
-  await figmaAPI.run(
-    (figma) => {
-    figma.closePlugin()
-  })
+export async function closePlugin() {
+  await figmaAPI.run((figma) => {
+    figma.closePlugin();
+  });
 }

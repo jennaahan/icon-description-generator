@@ -1,18 +1,17 @@
 // api endpoint to generate description for a single icon
-import { NextRequest, NextResponse } from "next/server"
-import { OpenAI } from "openai"
+import { NextRequest, NextResponse } from "next/server";
+import { OpenAI } from "openai";
 
 export async function POST(req: NextRequest) {
   try {
-    console.log("Generating AI description for a single icon")
-    const iconJSON = await req.json()
+    console.log("Generating AI description for a single icon");
+    const iconJSON = await req.json();
 
     const openai = new OpenAI({
       apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-    })
+    });
 
-    const prompt = 
-    `Imagine you are a UX designer updating a Figma icon library. Your task is to come up with an AIDescription for the icon provided in Icon JSON to improve its searchability and ensure it is used correctly.
+    const prompt = `Imagine you are a UX designer updating a Figma icon library. Your task is to come up with an AIDescription for the icon provided in Icon JSON to improve its searchability and ensure it is used correctly.
     
     Icon JSON:
     ${JSON.stringify(iconJSON)}
@@ -57,14 +56,17 @@ export async function POST(req: NextRequest) {
     Used to represent a sprint when talking about timing or process."
 
     Make sure to come up with a description that is different from the previous given description.
-    `   
+    `;
     const completion = await openai.chat.completions.create({
       messages: [{ role: "system", content: prompt }],
       model: "gpt-4o-mini",
-    })
+    });
 
-    return NextResponse.json({ data: completion.choices[0] })
+    return NextResponse.json({ data: completion.choices[0] });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 },
+    );
   }
 }

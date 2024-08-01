@@ -3,57 +3,57 @@
 @tailwind utilities;
 @import "react-figma-plugin-ds/figma-plugin-ds.css";
 
-
 /* overrided styling for figma ds checkbox to remove checkbox label */
 .checkbox__label {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 .checkbox__label::before {
-    margin: 0;
-    width: 12px;
-    height: 12px;
+  margin: 0;
+  width: 12px;
+  height: 12px;
 }
 
 /* overrided styling for figma ds menu to prevent clipping */
 .select-menu__menu--active {
-    top: -8px !important;
+  top: -8px !important;
 }
 
 /* overrided styling for figma ds toggle to fit figma colors */
-.switch__toggle:checked + .switch__label:before{
-    background-color: var(--blue);
-    border: 1px solid var(--blue);
+.switch__toggle:checked + .switch__label:before {
+  background-color: var(--blue);
+  border: 1px solid var(--blue);
 }
 .switch__label:before {
-    background-color: var(--black3-opaque);
-    border: 1px solid var(--black3-opaque);
+  background-color: var(--black3-opaque);
+  border: 1px solid var(--black3-opaque);
 }
 .switch__label:after {
-    border: 1px solid var(--black3-opaque);
+  border: 1px solid var(--black3-opaque);
 }
 
 /* overrided styling for figma ds disabled textarea to make text legible */
-.textarea:disabled, .textarea:disabled:hover {
-    color: var(--black8);
-    border: 1px solid var(--black1);
+.textarea:disabled,
+.textarea:disabled:hover {
+  color: var(--black8);
+  border: 1px solid var(--black1);
 }
 
 /* set code snippet font size */
 pre {
-    font-size: 11px;
+  font-size: 11px;
 }
 
 .tooltip-wrapper:hover .tooltip {
-    visibility: visible;
+  visibility: visible;
 }
 
 .tooltip::after {
-    content: " ";
-    position: absolute;
-    bottom: 100%;
-    right: 10px;
-    border-width: 6px;
-    border-style: solid;
-    border-color: transparent transparent var(--hud) transparent;
+  content: " ";
+  position: absolute;
+  bottom: 100%;
+  right: 10px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent var(--hud) transparent;
 }

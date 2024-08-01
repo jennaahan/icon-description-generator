@@ -1,18 +1,17 @@
 // api endpoint to generate descriptions for all selected icons
-import { NextRequest, NextResponse } from "next/server"
-import { OpenAI } from "openai"
+import { NextRequest, NextResponse } from "next/server";
+import { OpenAI } from "openai";
 
 export async function POST(req: NextRequest) {
   try {
-    console.log("Generating AI descriptions for all icons")
-    const iconsJSON = await req.json()
+    console.log("Generating AI descriptions for all icons");
+    const iconsJSON = await req.json();
 
     const openai = new OpenAI({
       apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-    })
+    });
 
-    const prompt = 
-    `Imagine you are a UX designer updating a Figma icon library. Your task is to add an AIDescription field to each icons provided in Icons JSON to improve their searchability and ensure they are used correctly.
+    const prompt = `Imagine you are a UX designer updating a Figma icon library. Your task is to add an AIDescription field to each icons provided in Icons JSON to improve their searchability and ensure they are used correctly.
     
     Icons JSON:
     ${JSON.stringify(iconsJSON)}
@@ -72,15 +71,18 @@ export async function POST(req: NextRequest) {
     Used to represent a sprint when talking about timing or process."
 
     Again, make sure parsing the output response with JSON.parse() does not cause any errors. Do not wrap the output JSON with additional text or symbols. Make sure the newline characters are escaped correctly. Make sure all keys and values are wrapped with double quotes.
-    `
+    `;
 
     const completion = await openai.chat.completions.create({
       messages: [{ role: "system", content: prompt }],
-      model: "gpt-4o-mini"
-    })
+      model: "gpt-4o-mini",
+    });
 
-    return NextResponse.json({ data: completion.choices[0] })
+    return NextResponse.json({ data: completion.choices[0] });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 },
+    );
   }
 }

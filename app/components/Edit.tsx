@@ -2,6 +2,8 @@ import React from 'react'
 import { IconType } from '@/lib/customTypes'
 import SvgImage from './SVGImage'
 import { Text, Icon, Textarea } from 'react-figma-plugin-ds'
+import { showToast } from '../utils/utils'
+import Tooltip from './Tooltip'
 
 interface EditProps {
   icons: IconType[],
@@ -36,32 +38,39 @@ function Edit({icons, selectedIcons, setIcons} : EditProps) {
   }
 
   return (
-    <ul className='p-4 flex flex-col gap-2 mb-16'>
+    <ul className='flex flex-col gap-3 p-4 mb-16'>
         {icons.filter(icon => selectedIcons.indexOf(icon.name) != -1).map((icon, idx)=>(
-          <li key={idx}>
+          <li key={idx} className='flex flex-col gap-2'>
             <div className='flex flex-row items-center justify-between'>
               <div className='flex flex-row gap-2 items-center'>
-                <SvgImage
-                    src={icon.image}
-                    alt={icon.name}
-                    width={20}
-                    height={20}
-                />
+                <div className="p-2 bg-gray-100 rounded-sm">
+                  <SvgImage src={icon.image} alt={icon.name} width={16} height={16} />
+                </div>
                 <Text>{icon.name}</Text>
               </div>
               <div className='flex flex-row items-center'>
-                <Icon
-                    className=""
-                    color="black8"
-                    name="recent"
-                    onClick={() => editDescription(icon.name, icon.description || "")}
-                />
-                <Icon
-                    className=""
-                    color="black8"
-                    name="swap"
-                    onClick={() => regenerateDescription(icon.name, icon.description || "")}
-                />
+                <div className='tooltip-wrapper relative'>
+                  <Icon
+                      className=""
+                      color="black8"
+                      name="recent"
+                      onClick={() => editDescription(icon.name, icon.description || "")}
+                  />
+                  <Tooltip
+                    text='Reset'
+                  />
+                </div>
+                <div className='tooltip-wrapper relative'>
+                  <Icon
+                      className=""
+                      color="black8"
+                      name="swap"
+                      onClick={() => regenerateDescription(icon.name, icon.description || "")}
+                  />
+                  <Tooltip
+                    text='Regenerate'
+                  />
+                </div>
               </div>
             </div>
             <Textarea

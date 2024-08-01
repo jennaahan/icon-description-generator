@@ -13,12 +13,10 @@ import Generate from "./components/Generate"
 import Edit from "./components/Edit"
 import Export from "./components/Export"
 import BottomBar from "./components/BottomBar"
-
-import "react-figma-plugin-ds/figma-plugin-ds.css"
-import iconSelection from './assets/icon-selection.svg'
+import { closePlugin, showToast } from "./utils/utils"
 
 export default function Plugin() {
-  const tabs = ["Generate", "Edit", "Export"]
+  const tabs = ["Edit", "Export"]
   const [selectedTab, setSelectedTab] = useState("Generate")
 
   const [loading, setLoading] = useState(false)
@@ -38,14 +36,9 @@ export default function Plugin() {
         console.error("Failed to get icons:", error)
       }
 
-      //todo make this not glitchy
       if (iconList.length == 0) {
-        figmaAPI.run(async (figma) => {
-          figma.notify(
-            "Please select a layer with icons to generate descriptions.",
-          )
-          // figma.closePlugin()
-        })
+        showToast("Please select a layer with icons to generate descriptions.")
+        closePlugin()
         return
       }
     }
@@ -119,37 +112,20 @@ export default function Plugin() {
 
   function handleUpdate(){
     updateDescription(icons)
+    showToast(`Updated descriptions of ${selectedIcons.length} icons`)
   }
   
   return (
-    <div className="flex flex-col h-screen">
-      <ul className="sticky top-0 z-10 bg-white flex flex-row gap-4 px-4 py-3 border border-b-gray-300">
+    <div className="flex flex-col h-screen select-none">
+      {selectedTab != "Generate" && <ul className="sticky top-0 z-10 bg-white flex flex-row gap-4 px-4 py-3 border border-b-gray-300">
          {tabs.map((tab, index) => (
           <li onClick={() => setSelectedTab(tab)} key={index}>
             <Text weight={selectedTab == tab ? "bold" : undefined}>{tab}</Text>
           </li>
         ))}
-      </ul>
-      {icons.length === 0 && 
-        <div className="w-full flex flex-col text-center justify-center">
-          <Title
-            className="max-w-xs"
-            level="h1"
-            size="small"
-            weight="bold"
-            >
-              Please select a layer with at least one icon to generate descriptions
-          </Title>
-          <Image
-            src={iconSelection}
-            alt="Icon selection"
-            width={248}
-            height={152}
-          />
-        </div>
-      }
+      </ul>}
       {loading && 
-        <div style={{ minHeight: 'calc(100vh - 160px)' }} className="flex justify-center items-center overflow-hidden">
+        <div style={{ minHeight: 'calc(100vh - 80px)' }} className="flex justify-center items-center overflow-hidden">
           <Icon
               className="icon--spin icon--spinner"
               color="black8"

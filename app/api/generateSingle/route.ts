@@ -1,6 +1,6 @@
 // api endpoint to generate description for a single icon
-import { NextRequest, NextResponse } from 'next/server'
-import { OpenAI } from 'openai'
+import { NextRequest, NextResponse } from "next/server"
+import { OpenAI } from "openai"
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,6 +55,8 @@ export async function POST(req: NextRequest) {
     Metaphor: time, loop, timing, process;
 
     Used to represent a sprint when talking about timing or process."
+
+    Make sure to come up with a description that is different from the previous given description.
     `   
     const completion = await openai.chat.completions.create({
       messages: [{ role: "system", content: prompt }],

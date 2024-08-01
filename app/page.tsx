@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from "react"
 
-import { figmaAPI } from "@/lib/figmaAPI"
-import { IconType } from "@/lib/customTypes"
+import { IconType } from "@/lib/customType"
 import { getSelection } from "@/lib/getSelection"
 import { updateDescription } from "@/lib/updateDescription"
 
-import { Title, Icon, Text} from "react-figma-plugin-ds"
-import Image from "next/image"
+import { Icon, Text} from "react-figma-plugin-ds"
 import Generate from "./components/Generate"
 import Edit from "./components/Edit"
 import Export from "./components/Export"
@@ -58,10 +56,10 @@ export default function Plugin() {
     let iconsJSON = generateIconsJSON()
 
     try {
-      const response = await fetch('/api/generateAll', {
-        method: 'POST',
+      const response = await fetch("/api/generateAll", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: iconsJSON,
       })
@@ -72,24 +70,18 @@ export default function Plugin() {
       setAIResponse(data.message.content)
 
     } catch (error) {
-      console.error('Error:', (error as Error).message)
+      console.error("Error:", (error as Error).message)
     } finally {
       setLoading(false)
       setSelectedTab("Edit")
     }
   }
 
-  useEffect(()=>{
-    mergeArrays()
-  }, [AIResponse])
-
   function mergeArrays() {
-    //TODO make this into a more general function to just get the icon object by name
-    console.log
     function getAIDescription(iconName : String) {
       let AIObj = JSON.parse(AIResponse)
       let icon = AIObj.find((icon : IconType) => icon.name === iconName)
-      return icon ? icon.AIDescription : ''
+      return icon ? icon.AIDescription : ""
     }
 
     let mergedArray = icons.map(icon => ({
@@ -99,33 +91,36 @@ export default function Plugin() {
     setIcons(mergedArray)
   }
 
+  useEffect(()=>{
+    mergeArrays()
+  }, [AIResponse])
+
   const handleDownload = () => {
-    const blob = new Blob([AIResponse], { type: 'application/json' })
+    const blob = new Blob([AIResponse], { type: "application/json" })
     const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
+    const link = document.createElement("a")
     link.href = url
-    link.download = 'icon-metadata.json'
+    link.download = "icon-metadata.json"
     link.click()
     URL.revokeObjectURL(url)
   }
 
-
   function handleUpdate(){
     updateDescription(icons)
-    showToast(`Updated descriptions of ${selectedIcons.length} icons`)
+    showToast("Updated descriptions")
   }
   
   return (
     <div className="flex flex-col h-screen select-none">
-      {selectedTab != "Generate" && <ul className="sticky top-0 z-10 bg-white flex flex-row gap-4 px-4 py-3 border border-b-gray-300">
+      {selectedTab != "Generate" && <ul className="sticky top-0 z-10 bg-white flex flex-row gap-4 px-4 py-3 border border-b-silver">
          {tabs.map((tab, index) => (
           <li onClick={() => setSelectedTab(tab)} key={index}>
-            <Text weight={selectedTab == tab ? "bold" : undefined}>{tab}</Text>
+            <Text className={selectedTab == tab ? "text-black8" : "text-black3"} weight={selectedTab == tab ? "bold" : "medium"}>{tab}</Text>
           </li>
         ))}
       </ul>}
       {loading && 
-        <div style={{ minHeight: 'calc(100vh - 80px)' }} className="flex justify-center items-center overflow-hidden">
+        <div style={{ minHeight: "calc(100vh - 80px)" }} className="flex justify-center items-center overflow-hidden">
           <Icon
               className="icon--spin icon--spinner"
               color="black8"
@@ -162,15 +157,15 @@ export default function Plugin() {
         </div>
       }
       { selectedTab === "Export" && 
-      <div>
-        <Export
-          AIResponse={AIResponse}
-        />
-        <BottomBar
-          description="Download JSON"
-          buttonText="Download"
-          onClick={handleDownload}
-        />
+        <div>
+          <Export
+            AIResponse={AIResponse}
+          />
+          <BottomBar
+            description="Download JSON"
+            buttonText="Download"
+            onClick={handleDownload}
+          />
         </div>
       }
     </div>

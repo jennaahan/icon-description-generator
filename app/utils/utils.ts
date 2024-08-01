@@ -6,8 +6,8 @@ export async function showToast(message: string){
       return figma.notify(message)
     },
     // pass variable as parameter
-    { message },
-  );
+    { message }
+  )
 }
 
 export async function closePlugin(){

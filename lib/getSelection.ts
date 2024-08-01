@@ -1,17 +1,17 @@
-import { figmaAPI } from "@/lib/figmaAPI";
-import { IconType } from "./customTypes";
+import { figmaAPI } from "@/lib/figmaAPI"
+import { IconType } from "./customType"
 
 export async function getSelection() {
   return await figmaAPI.run(async (figma) => {
     // current user selection
-    const { selection } = figma.currentPage;
+    const { selection } = figma.currentPage
     
     // array to store icon objects
     let icons : IconType[] = []
 
     // helper function to get icon image
     async function getIconImage(node: SceneNode){
-        const img = await node.exportAsync({ format: 'SVG_STRING' })
+        const img = await node.exportAsync({ format: "SVG_STRING" })
         return img
       }
     
@@ -44,10 +44,9 @@ export async function getSelection() {
     }
 
     // wait for all traverse calls to complete for all selections
-    const traversePromises = selection.map((node) => traverse(node));
-    await Promise.all(traversePromises);
+    const traversePromises = selection.map((node) => traverse(node))
+    await Promise.all(traversePromises)
     
-    console.log(icons)
     return icons
-  });
+  })
 }

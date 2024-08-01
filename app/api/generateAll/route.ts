@@ -1,6 +1,6 @@
 // api endpoint to generate descriptions for all selected icons
-import { NextRequest, NextResponse } from 'next/server'
-import { OpenAI } from 'openai'
+import { NextRequest, NextResponse } from "next/server"
+import { OpenAI } from "openai"
 
 export async function POST(req: NextRequest) {
   try {
@@ -70,6 +70,8 @@ export async function POST(req: NextRequest) {
     Metaphor: time, loop, timing, process;
 
     Used to represent a sprint when talking about timing or process."
+
+    Again, make sure parsing the output response with JSON.parse() does not cause any errors. Do not wrap the output JSON with additional text or symbols. Make sure the newline characters are escaped correctly. Make sure all keys and values are wrapped with double quotes.
     `
 
     const completion = await openai.chat.completions.create({

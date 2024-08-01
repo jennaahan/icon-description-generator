@@ -130,6 +130,7 @@ function Generate({ icons, selectedIcons, setSelectedIcons }: GenerateProps) {
                 </div>
                 {showDescription && (
                   <Textarea
+                    key={icon.description}
                     placeholder={"No description provided"}
                     rows={4}
                     defaultValue={icon.description}

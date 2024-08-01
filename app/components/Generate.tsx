@@ -114,6 +114,7 @@ function Generate({ icons, selectedIcons, setSelectedIcons }: GenerateProps) {
                 key={selectedIcons.indexOf(icon.name)} //used to force reload when selected icons updates
                 defaultValue={selectedIcons.indexOf(icon.name) > -1}
                 type="checkbox"
+                label=""
               />
               <div className="flex flex-col gap-2 flex-grow">
                 <div className="flex flex-row gap-2 items-center">

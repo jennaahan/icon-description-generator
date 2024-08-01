@@ -74,7 +74,7 @@ function Generate({ icons, selectedIcons, setSelectedIcons }: GenerateProps) {
         <Select
           className="my-2 mx-2"
           defaultValue="all"
-          onChange={(option) => setSelectedType(option.value)}
+          onChange={(option) => setSelectedType(option.value as string)}
           options={iconTypes}
           placeholder="Select icon type"
         />

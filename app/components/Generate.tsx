@@ -42,7 +42,7 @@ function Generate({ icons, selectedIcons, setSelectedIcons }: GenerateProps) {
       const strictRegex =
         /^Keyword:\s.+;\nMetaphor:\s(?:\w+(?:,\s)?)+;\n\nUsed.+\.$/;
       // lenient regex to account for missing usage description, any additional fields/descriptions
-      const regex = /^Keyword:\s.+;\nMetaphor:\s(?:.+(?:,\s)?)+;[\s\S.]*$/;
+      const regex = /^.+;\nMetaphor:\s(?:.+(?:,\s)?)+;[\s\S.]*$/;
 
       return !icon.description || !regex.test(icon.description);
     }

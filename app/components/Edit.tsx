@@ -84,7 +84,6 @@ function Edit({ icons, selectedIcons, setIcons }: EditProps) {
               </div>
             </div>
             <Textarea
-              key={icon.AIDescription}
               placeholder={"Description"}
               rows={4}
               defaultValue={icon.AIDescription}

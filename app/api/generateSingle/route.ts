@@ -17,40 +17,44 @@ export async function POST(req: NextRequest) {
     ${JSON.stringify(iconJSON)}
 
     Format for AI description:
-    Keyword: [icon description];
+    [icon description];
     Metaphor: [related metaphors];
     [usage description]
 
     Formatting:
-    - In AIDescription, keyword should be followed by a semicolon and one line break and metaphor should be followed by a semicolon and two line breaks
+    - In AIDescription, description should be followed by a semicolon and one line break and metaphor should be followed by a semicolon and two line breaks
     - Return only the AI description without any additional text or formatting. The description in the output message will be directly assigned to the icon
 
     Considerations for AIDescription:
-    - Keyword should be the exact description provided for the icon in the Icon JSON
+    - Icon JSON includes icons for Microsoft Fabric, which means they are often related to data and analytics
+    - [description] should be the exact description provided for the icon in the Icons JSON. DO NOT CHANGE IT IN ANY WAY, INCLUDING CHANGING CAPITALIZATION.
+    - if no description is provided, [description] should just be the icon name
     - Metaphor should include comma separated metaphors for the given icon
     - Metaphor should be strictly based on the provided icon name and description
+    - Metaphor should not be words included in the icon name or description
     - Metaphor should not include overly complex words. Please add words people would realistically search when looking for icons
     - When generating metaphor, consider what metaphor or metadata other icon libraries may assign to the given icon
     - Usage description should start with either "Used to" or "Used for"
     - Usage description should be concise (3-8 words)
-    - Usage description should be very strictly based on the provided icon name and description. Avoid making assumptions or adding unnecessary details
-    
+    - Usage description should be very strictly based on the provided icon name and description. Avoid making assumptions or adding unnecessary details. If possible, just repeat the icon description in verb form
+    - AGAIN, be as conservative as possible when generating descriptions and metaphors, relying heavily on the given name and description
+
     Here are examples of AIDescription for reference:
     
     Accessibility:
-    "Keyword: fluent-icon;
+    "fluent-icon;
     Metaphor: person, inclusive;
 
     Used for accessibility checker and topics."
 
     Arrow Circle Down:
-    "Keyword: fluent-icon;
+    "fluent-icon;
     Metaphor: point, direction, vertical, circle;
 
     Used for directional indicators."
     
     Arrow Sprint:
-    "Keyword: fluent-icon;
+    "fluent-icon;
     Metaphor: time, loop, timing, process;
 
     Used to represent a sprint when talking about timing or process."
